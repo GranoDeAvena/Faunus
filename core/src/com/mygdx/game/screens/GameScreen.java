@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.mygdx.game.Board;
 import com.mygdx.game.MyButtons;
 import com.mygdx.game.MyGame;
@@ -19,6 +20,8 @@ import com.mygdx.game.Player;
 public class GameScreen implements Screen {
     final MyGame game;
     OrthographicCamera camera;
+    static final int WIDTH  = 540;
+    static final int HEIGHT = 960;
     //public int state[];
 
     BitmapFont font = new BitmapFont(Gdx.files.internal("data/fonts/robo_med.fnt"), Gdx.files.internal("data/fonts/robo_med_0.png"), false);
@@ -41,22 +44,23 @@ public class GameScreen implements Screen {
 
     public Texture stick = new Texture(Gdx.files.internal("data/joystick.png"));
 
+    public static int n = 50, wc = 500/n;  ///////////// РАЗМЕРНОСТЬ !!!
     private MyButtons back = new MyButtons(50, 50);
-    public Player player = new Player(24, 0);
+    public Player player = new Player(n-1, 0, wc);
 
-    final static Board board = new Board();
-    private Vector2 point = new Vector2();
+    final static Board board = new Board(n);
+    private Vector3 touchPos = new Vector3();
     public int fraps = 0;
+    private int tx = 0, ty = 0;
+    private boolean swL = false, swU = false, swR = false, swD = false;
     //Stage stage = new Stage();
 
-    public GameScreen(final MyGame gam)
-    {
+    public GameScreen(final MyGame gam) {
         game = gam;
 //        stage = new Stage(new ScreenViewport());
 //        Gdx.input.setInputProcessor(stage);
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, 540, 960);
-        //state = new int[626];
+        camera.setToOrtho(false, WIDTH, HEIGHT);
     }
 
     @Override
@@ -69,10 +73,24 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(120/255.0f, 150/255.0f, 145/255.0f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         fraps++;
-
-        point.x = Gdx.input.getX();
-        point.y = 960 - Gdx.input.getY();
-
+        if(Gdx.input.isTouched()) {
+//            if (tx != 0 && ty != 0) {
+//                if (tx - (int)touchPos.x > 30)
+//                    swL = true;
+//                if (ty - (int)touchPos.y > 30)
+//                    swU = true;
+//            }
+            touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+            camera.unproject(touchPos);
+            tx = (int)touchPos.x;
+            ty = (int)touchPos.y;
+        }
+//        else {
+//            tx = 0;
+//            ty = 0;
+////            swL = false;
+////            swU = false;
+//        }
         camera.update();
         game.batch.setProjectionMatrix(camera.combined);
 
@@ -84,44 +102,36 @@ public class GameScreen implements Screen {
 
         font.setScale(0.25f, 0.25f);
         font.setColor(0.3f,0.3f,0.3f,1f);
-        int i, j, wc = 20, k;
-        for (i = 0; i < 25; i++)
-            for (j = 0; j < 25; j++) {
-                //k = board.getc(i, j).state;
-//                if (k == 0 || k > 5)
-//                    game.batch.draw (cage0, wc + i*wc, 380 + wc + j*wc);
-//                if (k == 1 || k == 2)
-//                    game.batch.draw (cage1, wc + i*wc, 380 + wc + j*wc);
-//                if (k == 3 || k == 4)
-//                    game.batch.draw (cage2, wc + i*wc, 380 + wc + j*wc);
-//                if (k == 5)
-//                    game.batch.draw (cage3, wc + i*wc, 380 + wc + j*wc);
-//                if (board.getc(i, j).path)
-//                    font.draw(game.batch, "p", wc + i*wc, 380 + wc + 25 + j*wc);
-                font.draw(game.batch, ""+delta, 300, 300);
+        int i, j;
+        for (i = 0; i < n; i++)
+            for (j = 0; j < n; j++) {
                 if (!board.getc(i, j).right)
-                    game.batch.draw (cage1, wc + i*wc, 380 + wc + j*wc);
+                    game.batch.draw (cage1, 20 + i*wc, 400 + j*wc, wc, wc);
                 if (!board.getc(i, j).down)
-                    game.batch.draw (cage2, wc + i*wc, 380 + wc + j*wc);
+                    game.batch.draw (cage2, 20 + i*wc, 400 + j*wc, wc, wc);
                 if (!board.getc(i, j).left)
-                    game.batch.draw (cage3, wc + i*wc, 380 + wc + j*wc);
+                    game.batch.draw (cage3, 20 + i*wc, 400 + j*wc, wc, wc);
                 if (!board.getc(i, j).up)
-                    game.batch.draw (cage4, wc + i*wc, 380 + wc + j*wc);
-                if (!board.getc(i, j).path)
-                    font.draw(game.batch, "np", wc + i*wc, 380 + wc + 25 + j*wc);
+                    game.batch.draw (cage4, 20 + i*wc, 400 + j*wc, wc, wc);
+//                if (!board.getc(i, j).path)
+//                    font.draw(game.batch, "np", wc + i*wc, 380 + wc + 25 + j*wc);
 //                if (board.getc(i, j).down && board.getc(i, j).up)
 //                    game.batch.draw (cage0, wc + i*wc, 380 + wc + j*wc);
 
             }
 
+        game.batch.draw (p, player.x, player.y, wc, wc);  // Игрок
 
-        game.batch.draw (p, player.x, player.y);  // Игрок
-
-        font2.setScale(1f, 1f);
+        font2.setScale(0.8f, 0.8f);
         font2.setColor(1f, 1f, 1f, 1f);
-        //font2.draw(game.batch, "Faunus", 100, 880);
 
-        if (back.contein(point))
+        font.setScale(0.6f, 0.6f);
+        font.setColor(1f, 1f, 1f, 1f);
+        font.draw(game.batch, "x:"+tx+", y:"+ty, 10, 200);
+        if (Gdx.input.isTouched())
+            font.draw(game.batch, "Touch!", 10, 150);
+
+        if (back.contein(tx, ty))
             if(Gdx.input.isTouched())
                 game.batch.draw (button3, back.x, back.y);
             else
@@ -136,36 +146,32 @@ public class GameScreen implements Screen {
 
         game.batch.end();
 
-        if(board.getc(player.bx, player.by).left && (Gdx.input.isKeyPressed(Input.Keys.LEFT) ||
-                Gdx.input.isTouched() && Gdx.input.getX() > 200 && Gdx.input.getX() + Gdx.input.getY() < 500 &&
-                Gdx.input.getX() - Gdx.input.getY() > -300) && fraps>10) {
+        if (board.getc(player.bx, player.by).left && (Gdx.input.isKeyPressed(Input.Keys.LEFT) ||
+                Gdx.input.isTouched() && tx > 200 && ty < -tx + 600 && ty > tx - 200 || swL) && fraps>10) {
             player.bx--;
-            player.x -= 20;
+            player.x -= wc;
             fraps = 0;
         }
-        if(board.getc(player.bx, player.by).right && (Gdx.input.isKeyPressed(Input.Keys.RIGHT) ||
-                Gdx.input.isTouched() && Gdx.input.getX() < 600 && Gdx.input.getX() + Gdx.input.getY() > 500 &&
-                        Gdx.input.getX() - Gdx.input.getY() < -300) && fraps>10) {
+        if (board.getc(player.bx, player.by).right && (Gdx.input.isKeyPressed(Input.Keys.RIGHT) ||
+                Gdx.input.isTouched() && tx < 600 && ty > -tx + 600 && ty < tx - 200) && fraps>10) {
             player.bx++;
-            player.x += 20;
+            player.x += wc;
             fraps = 0;
         }
-        if(board.getc(player.bx, player.by).up && (Gdx.input.isKeyPressed(Input.Keys.UP) ||
-                Gdx.input.isTouched() && Gdx.input.getY() < 400 && Gdx.input.getX() + Gdx.input.getY() > 500 &&
-                Gdx.input.getX() - Gdx.input.getY() > -300) && fraps>10) {
+        if (board.getc(player.bx, player.by).up && (Gdx.input.isKeyPressed(Input.Keys.UP) ||
+                Gdx.input.isTouched() && ty < 400 && ty > -tx + 600 && ty > tx - 200 || swU) && fraps>10) {
             player.by++;
-            player.y += 20;
+            player.y += wc;
             fraps = 0;
         }
-        if(board.getc(player.bx, player.by).down && (Gdx.input.isKeyPressed(Input.Keys.DOWN) ||
-                Gdx.input.isTouched() && Gdx.input.getY() > 0 && Gdx.input.getX() + Gdx.input.getY() < 500 &&
-                        Gdx.input.getX() - Gdx.input.getY() < -300) && fraps>10) {
+        if (board.getc(player.bx, player.by).down && (Gdx.input.isKeyPressed(Input.Keys.DOWN) ||
+                Gdx.input.isTouched() && ty > 0 && ty < -tx + 600 && ty < tx - 200) && fraps>10) {
             player.by--;
-            player.y -= 20;
+            player.y -= wc;
             fraps = 0;
         }
 
-        if (back.contein(point))
+        if (back.contein(tx,ty))
             if(Gdx.input.isTouched())
                 back.state = 2;
             else if (back.state == 2) {

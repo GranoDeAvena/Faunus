@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -49,6 +50,8 @@ public class MainMenuScreen implements Screen {
     private MyButtons quit = new MyButtons(100, 400);
 
     private Vector2 point = new Vector2();
+    private Vector3 touchPos = new Vector3();
+    private int tx = 0, ty = 0;
 
     @Override
     public void show() {
@@ -60,8 +63,15 @@ public class MainMenuScreen implements Screen {
         Gdx.gl.glClearColor(120/255.0f, 150/255.0f, 145/255.0f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        point.x = Gdx.input.getX();
-        point.y = 960 - Gdx.input.getY();
+        if(Gdx.input.isTouched()) {
+            touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+            camera.unproject(touchPos);
+            tx = (int)touchPos.x;
+            ty = (int)touchPos.y;
+        }
+
+        point.x = tx;
+        point.y = ty;
 
         camera.update();
         game.batch.setProjectionMatrix(camera.combined);
