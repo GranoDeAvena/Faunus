@@ -37,12 +37,13 @@ public class MainMenuScreen implements Screen {
     }
 
     BitmapFont font = new BitmapFont(Gdx.files.internal("data/fonts/robo_med.fnt"), Gdx.files.internal("data/fonts/robo_med_0.png"), false);
+    Texture light = new Texture(Gdx.files.internal("data/light.png"));
     BitmapFont font2 = new BitmapFont(Gdx.files.internal("data/fonts/robo_larg.fnt"), Gdx.files.internal("data/fonts/robo_larg_0.png"), false);
 
     public Texture fon = new Texture(Gdx.files.internal("data/fon3.jpg"));
-    public Texture button = new Texture(Gdx.files.internal("data/button.png"));
-    public Texture button2 = new Texture(Gdx.files.internal("data/button2.png"));
-    public Texture button3 = new Texture(Gdx.files.internal("data/button3.png"));
+    public Texture button = new Texture(Gdx.files.internal("data/buttons/button.png"));
+    public Texture button2 = new Texture(Gdx.files.internal("data/buttons/button2.png"));
+    public Texture button3 = new Texture(Gdx.files.internal("data/buttons/button3.png"));
 
     private MyButtons start = new MyButtons(100, 700);
     private MyButtons levels = new MyButtons(100, 600);
@@ -51,7 +52,7 @@ public class MainMenuScreen implements Screen {
 
     private Vector2 point = new Vector2();
     private Vector3 touchPos = new Vector3();
-    private int tx = 0, ty = 0;
+    int time = 0;
 
     @Override
     public void show() {
@@ -63,21 +64,22 @@ public class MainMenuScreen implements Screen {
         Gdx.gl.glClearColor(120/255.0f, 150/255.0f, 145/255.0f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        if(Gdx.input.isTouched()) {
-            touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-            camera.unproject(touchPos);
-            tx = (int)touchPos.x;
-            ty = (int)touchPos.y;
-        }
-
-        point.x = tx;
-        point.y = ty;
+        time++;
+        //if(Gdx.input.isTouched()) {
+        touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+        camera.unproject(touchPos);
+        point.x = (int)touchPos.x;
+        point.y = (int)touchPos.y;
+        //}
 
         camera.update();
         game.batch.setProjectionMatrix(camera.combined);
 
         game.batch.begin();
         game.batch.draw (fon, 0, 0);
+        game.batch.draw (fon, 0, 0);
+        game.batch.draw (light, -400 + time/10, +400 - time/2);
+        game.batch.draw (light, 200 - time/15, -500 + time/5);
 
         font2.setScale(1f, 1f);
         font2.setColor(1f, 1f, 1f, 1f);
